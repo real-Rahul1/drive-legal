@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DriveLegal — Know Your Road Rights</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">⚖</span>
+        <div>
+          <span class="logo-name">DriveLegal</span>
+          <span class="logo-sub">Road Safety Intelligence</span>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="#map-section" class="nav-link">Map</a>
+        <a href="#laws-section" class="nav-link">Laws</a>
+        <a href="#fines-section" class="nav-link">Fines</a>
+        <a href="#about" class="nav-link">About</a>
+      </nav>
+      <div class="header-badge">CoERS · IIT Madras</div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-content">
+      <div class="hero-tag">National Road Safety Hackathon 2026</div>
+      <h1 class="hero-title">KNOW<br><span class="hero-accent">YOUR LAWS.</span><br>DRIVE SAFE.</h1>
+      <p class="hero-desc">Location-specific traffic regulations, violation fines, and enforcement rules — across every Indian state, in one place.</p>
+      <div class="hero-search">
+        <div class="search-box">
+          <span class="search-icon">📍</span>
+          <input type="text" id="locationInput" placeholder="Enter city or state (e.g. Mumbai, Delhi, Kolkata...)" autocomplete="off">
+          <button id="searchBtn" class="search-btn">Search</button>
+        </div>
+        <button id="detectBtn" class="detect-btn">
+          <span>◎</span> Use My Location
+        </button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num">7+</span><span class="stat-label">States Covered</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">MV Act<br>2019</span><span class="stat-label">Latest Fines</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">Free</span><span class="stat-label">Always</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Map Section -->
+  <section class="map-section" id="map-section">
+    <div class="section-label">INTERACTIVE MAP</div>
+    <h2 class="section-title">Locate. Learn. Comply.</h2>
+    <p class="section-desc">Click anywhere on the map or search a location to get state-specific traffic rules instantly.</p>
+    <div class="map-container">
+      <div id="map"></div>
+    </div>
+  </section>
+
+  <!-- Results Section -->
+  <section class="results-section" id="laws-section" style="display:none;">
+    <div class="results-header">
+      <div class="results-location">
+        <span class="results-pin">📍</span>
+        <div>
+          <div class="results-state" id="resultsState">—</div>
+          <div class="results-coords" id="resultsCoords"></div>
+        </div>
+      </div>
+      <div class="speed-badges" id="speedBadges"></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="fines">Fines & Violations</button>
+      <button class="tab" data-tab="local">Local Rules</button>
+      <button class="tab" data-tab="contacts">Helpline & Contacts</button>
+    </div>
+
+    <div class="tab-content active" id="tab-fines">
+      <div class="fines-table-wrap">
+        <table class="fines-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Violation</th>
+              <th>1st Offence Fine</th>
+              <th>Repeat Offence</th>
+              <th>Risk</th>
+            </tr>
+          </thead>
+          <tbody id="finesBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-local">
+      <div class="local-rules" id="localRules"></div>
+    </div>
+
+    <div class="tab-content" id="tab-contacts">
+      <div class="contacts-grid" id="contactsGrid"></div>
+    </div>
+  </section>
+
+  <!-- Loading -->
+  <div class="loading-overlay" id="loadingOverlay" style="display:none;">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Fetching traffic laws<span class="dots">...</span></div>
+  </div>
+
+  <!-- Fine Calculator -->
+  <section class="calculator-section" id="fines-section">
+    <div class="section-label">FINE ESTIMATOR</div>
+    <h2 class="section-title">Calculate Your Fine</h2>
+    <div class="calc-card">
+      <div class="calc-row">
+        <label>Select State</label>
+        <select id="calcState">
+          <option value="">-- Choose a State --</option>
+        </select>
+      </div>
+      <div class="calc-row">
+        <label>Violation Type</label>
+        <select id="calcViolation">
+          <option value="">-- Select State First --</option>
+        </select>
+      </div>
+      <div class="calc-row">
+        <label>Offence History</label>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="offence" value="first" checked> First Offence</label>
+          <label class="radio-label"><input type="radio" name="offence" value="repeat"> Repeat Offence</label>
+        </div>
+      </div>
+      <button id="calcBtn" class="calc-btn">Estimate Fine →</button>
+      <div class="calc-result" id="calcResult" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="about-section" id="about">
+    <div class="about-grid">
+      <div class="about-text">
+        <div class="section-label">ABOUT DRIVELEGAL</div>
+        <h2>Empowering drivers with knowledge</h2>
+        <p>DriveLegal was built for the National Road Safety Hackathon 2026, organised by CoERS, RBG Labs, IIT Madras. Our mission: eliminate ignorance of traffic laws as a cause of road accidents.</p>
+        <p>By providing location-specific, up-to-date information on traffic regulations, we help citizens understand their obligations — and the consequences of violations — before they get behind the wheel.</p>
+        <div class="about-tags">
+          <span class="tag">Motor Vehicles Act 2019</span>
+          <span class="tag">e-Challan Aware</span>
+          <span class="tag">7+ States</span>
+          <span class="tag">Free Access</span>
+        </div>
+      </div>
+      <div class="about-cards">
+        <div class="about-card">
+          <div class="about-card-icon">🗺️</div>
+          <h3>Location Smart</h3>
+          <p>Detect your location or search any city to get region-specific rules instantly.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-card-icon">⚖️</div>
+          <h3>Law Accurate</h3>
+          <p>Based on the Motor Vehicles Act 2019 with state-specific amendments included.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-card-icon">🔔</div>
+          <h3>Fine Aware</h3>
+          <p>Exact fine amounts for every violation — first offence and repeat penalties both shown.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo"><span class="logo-icon">⚖</span><span>DriveLegal</span></div>
+      <div class="footer-text">
+        Built for National Road Safety Hackathon 2026 · CoERS, RBG Labs, IIT Madras<br>
+        Data source: Motor Vehicles Act 2019 + State Transport Departments
+      </div>
+      <div class="footer-disclaimer">For informational purposes only. Always verify with official state authorities.</div>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
